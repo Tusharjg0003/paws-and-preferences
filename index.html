@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Paws & Preferences: Find Your Favourite Kitty</title>
+  <meta name="description" content="Swipe through cats from CATAAS. Like (right) or dislike (left), then see your favourites." />
+  <link rel="preconnect" href="https://cataas.com" />
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#0B1220; --muted:#5b6b7c; --accent:#ff3aa7; --like:#16a34a; --nope:#dc2626;
+      --card-w:min(92vw, 420px); --card-h:min(78vh, 640px);
+      --poster-space: 120px;
+      --arena-extra: 60vw;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:#fff; color:var(--fg);
+      font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+    }
+
+    .app{min-height:100%;display:grid;grid-template-rows:auto 1fr auto;place-items:center;gap:12px;padding:18px;position:relative;overflow:hidden}
+
+    header{display:flex;align-items:center;gap:10px;justify-content:space-between;width:100%;max-width:none;padding:4px 8px}
+    header h1{
+      margin:0;font-size:clamp(1.4rem,5vw,2.4rem);letter-spacing:.3px;font-weight:900;white-space:nowrap;
+      color:#ff3aa7;-webkit-text-stroke:1.2px #000;
+      text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;
+    }
+
+    .stack{position:relative;width:var(--card-w);height:var(--card-h);z-index:2; grid-column: 2;}
+    .card{position:absolute;inset:0;border-radius:18px;overflow:hidden;background:#ffffff;border:2px solid #111;box-shadow:0 18px 60px #0002;touch-action:none;user-select:none}
+    .ph{position:absolute;inset:0;background:linear-gradient(90deg,#eee 25%,#f7f7f7 37%,#eee 63%);background-size:400% 100%;animation:shimmer 1.1s infinite}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:contrast(1.02) saturate(1.06)}
+    .badge{position:absolute;top:14px;padding:.45rem .6rem;border-radius:10px;font-weight:800;letter-spacing:.6px;font-size:.9rem;border:3px solid transparent;transform:rotate(-8deg);opacity:0;transition:.2s}
+    .badge.like{left:14px;color:#102417;background:#22c55e22;border-color:#22c55e}
+    .badge.nope{right:14px;transform:rotate(8deg);color:#2a0f12;background:#ef444422;border-color:#ef4444}
+    .scrim{position:absolute;inset:0;background:linear-gradient(to top, #0006 0 35%, transparent 65%)}
+    .meta{
+      position:absolute;bottom:10px;left:12px;right:12px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
+      backdrop-filter:blur(10px);background:#ffffffcc;border:1px solid #111;border-radius:14px;padding:10px 12px
+    }
+    .meta .title{font-size:1.05rem;font-weight:800}
+    .meta .idx{font-size:.85rem;color:var(--muted)}
+
+    .arena{
+      position:relative;
+      display:grid;
+      grid-template-columns: minmax(var(--poster-space), 1fr) var(--card-w) minmax(var(--poster-space), 1fr);
+      align-items:center;
+      gap:16px;
+      width:100%;
+      max-width: min(100%, calc(var(--card-w) + var(--arena-extra)));
+    }
+
+    .side-hint{
+      grid-row: 1;
+      align-self:center;
+      justify-self:center;
+      z-index:3;
+      font-weight:900;letter-spacing:2px;text-align:center;line-height:.95;
+      color:#ff3aa7;-webkit-text-stroke:1px #000;
+      text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;
+      opacity:.12; transition: opacity .18s ease, transform .18s ease;
+      font-size: clamp(16px, 5vw, 56px);
+      user-select:none; pointer-events:none;
+    }
+    .side-hint.left{ grid-column: 1; transform: rotate(-4deg); }
+    .side-hint.right{ grid-column: 3; transform: rotate(4deg); }
+    .side-hint.active{ opacity:.65; }
+    .side-hint.left.active{ transform: rotate(-4deg) scale(1.06); }
+    .side-hint.right.active{ transform: rotate(4deg) scale(1.06); }
+
+    .howto{z-index:3;width:100%;display:flex;justify-content:center}
+    .howto-inner{margin:6px 0 8px;padding:8px 12px;background:#fff;border:1px solid #111;border-radius:999px;box-shadow:0 6px 24px #0000000d;font-size:.95rem}
+    .howto .text strong{font-weight:800}
+    .howto .sep{opacity:.55;margin:0 8px}
+
+    .paws{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+    .paw{position:absolute;opacity:.06;animation:floatUp linear infinite;filter:drop-shadow(0 2px 0 #0002)}
+    @keyframes floatUp{from{transform:translateY(110vh) rotate(0deg)}to{transform:translateY(-20vh) rotate(25deg)}}
+
+    .progress{width:var(--card-w);height:6px;background:#00000010;border:1px solid #111;border-radius:999px;overflow:hidden}
+    .bar{height:100%;width:0;background:linear-gradient(90deg,#ff3aa7,#111);transition:width .25s}
+
+    /* Masonry Gallery */
+    .summary{display:none;max-width:min(94vw,980px)}
+    .summary.show{display:block}
+    .grid{
+      column-count: 3;
+      column-gap: 12px;
+    }
+    .grid img{
+      width:100%;
+      height:auto;
+      display:block;
+      margin:0 0 12px;
+      border-radius:12px;
+      border:2px solid #111;
+      break-inside: avoid;
+    }
+    @media (max-width: 900px){ .grid{ column-count: 2; } }
+    @media (max-width: 560px){ .grid{ column-count: 1; } }
+
+    .chip{font-size:.88rem;color:var(--muted)}
+
+    @media (max-width:520px){
+      .arena{ grid-template-columns: var(--card-w); }
+      .side-hint{ display:none; }
+    }
+
+    @media (prefers-reduced-motion: reduce){ .card{transition:none!important} }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="paws" id="paws" aria-hidden="true"></div>
+
+    <header>
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 22s-6-4-9-7.5A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9 8.5C18 18 12 22 12 22Z" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1>Paws & Preferences</h1>
+        <!-- pill removed -->
+      </div>
+      <label class="sound-toggle" title="Toggle meow feedback">
+        <input type="checkbox" id="soundChk" /> Meow on like
+      </label>
+    </header>
+
+    <div class="howto" id="howto" role="status" aria-live="polite">
+      <div class="howto-inner">⬅️ Swipe <strong>left</strong> to dislike · Swipe <strong>right</strong> to like ➡️</div>
+    </div>
+
+    <div class="arena">
+      <div class="side-hint left" id="hintLeft" aria-hidden="true">⬅︎ SWIPE<br>LEFT</div>
+      <div class="stack" id="stack" aria-live="polite"></div>
+      <div class="side-hint right" id="hintRight" aria-hidden="true">SWIPE<br>RIGHT ➡︎</div>
+    </div>
+
+    <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+
+    <section class="summary" id="summary" aria-labelledby="sum-h">
+      <h2 id="sum-h">Your favourites</h2>
+      <p class="chip"><span id="likedCount">0</span> liked out of <span id="totalCount">0</span></p>
+      <div class="grid" id="likedGrid"></div>
+      <div style="margin-top:14px;display:flex;gap:10px">
+        <button id="again" style="border:2px solid #111;background:#fff;color:#000;border-radius:999px;padding:10px 14px;font-weight:800">Try another batch</button>
+        <a href="https://cataas.com/#/" target="_blank" rel="noopener" style="border:2px solid #111;background:#fff;color:#000;border-radius:999px;padding:10px 14px;font-weight:800">Powered by CATAAS</a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+  (function(){
+    const TOTAL = 15;
+    const stack = document.getElementById('stack');
+    const bar = document.getElementById('bar');
+    const summary = document.getElementById('summary');
+    const likedGrid = document.getElementById('likedGrid');
+    const likedCountEl = document.getElementById('likedCount');
+    const totalCountEl = document.getElementById('totalCount');
+    const again = document.getElementById('again');
+    const howto = document.getElementById('howto');
+    const soundChk = document.getElementById('soundChk');
+    const pawsLayer = document.getElementById('paws');
+    const hintLeft = document.getElementById('hintLeft');
+    const hintRight = document.getElementById('hintRight');
+
+    let images = [];
+    let index = 0;
+    let liked = [];
+
+    function catUrl(seed){
+      const w = Math.round(Math.min(window.innerWidth*0.92, 420));
+      const h = Math.round(Math.min(window.innerHeight*0.78, 640));
+      return `https://cataas.com/cat?width=${w}&height=${h}&random=${seed}`;
+    }
+
+    function loadBatch(n=TOTAL){
+      images = Array.from({length:n}, (_,i)=>catUrl(Date.now()+i+Math.random()));
+      liked = []; index = 0; updateProgress();
+      stack.innerHTML = '';
+      summary.classList.remove('show');
+      howto.style.display = 'flex';
+      spawnPaws();
+      images.forEach((src, i)=>{
+        const card = createCard(src, i);
+        stack.appendChild(card);
+        card.style.transform = `translateY(-${(images.length-i-1)*4}px)`;
+      });
+      focusTop();
+      resetHints();
+    }
+
+    function createCard(src, i){
+      const el = document.createElement('article');
+      el.className = 'card';
+      el.setAttribute('role','group');
+      el.setAttribute('aria-label', `Cat ${i+1} of ${images.length}`);
+
+      const img = new Image();
+      img.className = 'img'; img.alt = 'A random cat from CATAAS'; img.src = src;
+      const ph = document.createElement('div'); ph.className='ph';
+      const scrim = document.createElement('div'); scrim.className='scrim';
+
+      const likeBadge = document.createElement('div'); likeBadge.className='badge like'; likeBadge.textContent='LIKE';
+      const nopeBadge = document.createElement('div'); nopeBadge.className='badge nope'; nopeBadge.textContent='NOPE';
+
+      const meta = document.createElement('div'); meta.className='meta';
+      const title = document.createElement('div'); title.className='title'; title.textContent='CATAAS Kitty';
+      const idx = document.createElement('div'); idx.className='idx'; idx.textContent=`${i+1} / ${TOTAL}`;
+      meta.append(title, idx);
+
+      el.append(ph,img,likeBadge,nopeBadge,scrim,meta);
+
+      img.addEventListener('load', ()=> img.classList.add('img-loaded'));
+
+      let startX=0, startY=0, curX=0, curY=0, dragging=false;
+      function onPointerDown(e){ dragging=true; startX=e.clientX; startY=e.clientY; el.setPointerCapture(e.pointerId); }
+      function onPointerMove(e){
+        if(!dragging) return;
+        curX = e.clientX - startX; curY = e.clientY - startY;
+        const rot = curX/18;
+        el.style.transition = 'none';
+        el.style.transform = `translate(${curX}px, ${curY}px) rotate(${rot}deg)`;
+        const likeOpacity = Math.min(Math.max((curX-40)/80,0),1);
+        const nopeOpacity = Math.min(Math.max((-curX-40)/80,0),1);
+        likeBadge.style.opacity = likeOpacity;
+        nopeBadge.style.opacity = nopeOpacity;
+
+        if(howto.style.display!=='none'){ howto.style.display='none'; }
+        setHintIntensity(curX);
+      }
+      function onPointerUp(e){
+        if(!dragging) return; dragging=false;
+        el.releasePointerCapture(e.pointerId);
+        const threshold = Math.min(120, window.innerWidth*0.22);
+        if(curX > threshold){ swipe('right'); }
+        else if(curX < -threshold){ swipe('left'); }
+        else { resetCard(); }
+      }
+      function resetCard(){
+        likeBadge.style.opacity=0; nopeBadge.style.opacity=0;
+        el.style.transition = 'transform .25s ease';
+        el.style.transform = '';
+        resetHints();
+      }
+      function swipe(dir){
+        const offX = (dir==='right'? window.innerWidth : -window.innerWidth)*1.1;
+        el.style.transition = 'transform .32s ease-out, opacity .32s ease-out';
+        el.style.transform = `translate(${offX}px, ${curY}px) rotate(${dir==='right'?20:-20}deg)`;
+        el.style.opacity = .85;
+        setTimeout(()=>{
+          if(dir==='right'){ liked.push(src); meow(); }
+          el.remove();
+          index++;
+          updateProgress();
+          if(index>=images.length){ showSummary(); }
+          else { focusTop(); }
+          resetHints();
+        }, 320);
+      }
+
+      el.addEventListener('pointerdown', onPointerDown);
+      el.addEventListener('pointermove', onPointerMove);
+      el.addEventListener('pointerup', onPointerUp);
+      el.addEventListener('pointercancel', onPointerUp);
+      el.tabIndex = 0;
+      el.addEventListener('keydown', (e)=>{
+        if(e.key==='ArrowLeft'){ e.preventDefault(); swipe('left'); }
+        if(e.key==='ArrowRight'){ e.preventDefault(); swipe('right'); }
+      });
+
+      return el;
+    }
+
+    function focusTop(){
+      const top = stack.lastElementChild; if(top) top.focus();
+    }
+
+    function updateProgress(){
+      const pct = images.length? (index/images.length)*100 : 0;
+      bar.style.width = pct+'%';
+    }
+
+    function showSummary(){
+      totalCountEl.textContent = images.length;
+      likedCountEl.textContent = liked.length;
+      likedGrid.innerHTML = '';
+      liked.forEach(src=>{
+        const img = document.createElement('img');
+        img.src = src; img.alt='Your liked cat';
+        img.loading = 'lazy';
+        likedGrid.appendChild(img);
+      });
+      summary.classList.add('show');
+      window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
+      pawsLayer.style.opacity = .5;
+      resetHints();
+    }
+
+    again.addEventListener('click', ()=> loadBatch(TOTAL));
+
+    function setHintIntensity(x){
+      const BASE = 0.12, MAX = 0.75, TH = 10, SCALE = 160;
+      if(!hintLeft || !hintRight) return;
+      const abs = Math.max(0, Math.abs(x) - TH);
+      const t = Math.min(abs / SCALE, 1);
+      const op = (BASE + (MAX - BASE) * t).toFixed(2);
+      if (x < -TH) {
+        hintLeft.classList.add('active'); hintRight.classList.remove('active');
+        hintLeft.style.opacity = op; hintRight.style.opacity = BASE;
+      } else if (x > TH) {
+        hintRight.classList.add('active'); hintLeft.classList.remove('active');
+        hintRight.style.opacity = op; hintLeft.style.opacity = BASE;
+      } else {
+        resetHints();
+      }
+    }
+    function resetHints(){
+      if(!hintLeft || !hintRight) return;
+      hintLeft.classList.remove('active');
+      hintRight.classList.remove('active');
+      hintLeft.style.opacity = 0.12;
+      hintRight.style.opacity = 0.12;
+    }
+
+    function spawnPaws(){
+      pawsLayer.innerHTML = '';
+      const count = 20; const icons = ['🐾','🐱','🐈'];
+      for(let i=0;i<count;i++){
+        const s = document.createElement('div'); s.className='paw'; s.textContent = icons[i%icons.length];
+        const dur = 12 + Math.random()*12; const left = Math.random()*100; const delay = -Math.random()*dur;
+        const size = 110 + Math.random()*60; s.style.fontSize = size+'px';
+        s.style.left = left+'%'; s.style.animationDuration = dur+'s'; s.style.animationDelay = delay+'s';
+        pawsLayer.appendChild(s);
+      }
+    }
+
+    function meow(){
+      if(!soundChk.checked) return;
+      try{
+        const u = new SpeechSynthesisUtterance('meow');
+        u.pitch = 1.4; u.rate = 1.1; u.volume = 0.6; speechSynthesis.speak(u);
+      }catch(e){}
+    }
+
+    loadBatch(TOTAL);
+  })();
+  </script>
+</body>
+</html>
