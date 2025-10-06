@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://cataas.com" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Pacifico&display=swap" rel="stylesheet" />
   <style>
     /* --------- Mobile-first (iPhone 14 Pro friendly) --------- */
     :root{
@@ -59,12 +59,12 @@
     }
     header h1{
       margin:0; justify-self:center; text-align:center; display:inline-flex; align-items:center; gap:8px;
-      font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial;
-      font-size:clamp(1.35rem, 6.4vw, 2.05rem); letter-spacing:.2px; font-weight:800; white-space:nowrap;
+      font-family:"Pacifico", "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial, cursive;
+      font-size:clamp(1.5rem, 6.8vw, 2.2rem); letter-spacing:.0px; font-weight:400; white-space:nowrap;
       background:linear-gradient(90deg,#111 0%, #ff3aa7 35%, #ffb6c9 55%, #ffc56f 75%, #111 100%);
       background-size:320% 100%;
       -webkit-background-clip:text; background-clip:text; color:transparent;
-      -webkit-text-stroke:.8px #000; text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;
+      -webkit-text-stroke:.6px #000; text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;
       animation:brandShift 9s linear infinite;
     }
     @keyframes brandShift{0%{background-position:0% 50%}100%{background-position:320% 50%}}
@@ -469,7 +469,7 @@
     function spawnEmojis(){
       if(!emojisLayer) return;
       emojisLayer.innerHTML = '';
-      const EMOJIS = ['😺','🐾','😻','🐈','❤️','💖'];
+       const EMOJIS = ['CAT','PAW','CAT','PAW','HEART','HEART'];
 
       // Increase how many are on screen at once
       const count = 48; // was 22
@@ -477,7 +477,14 @@
       for(let i=0;i<count;i++){
         const e = document.createElement('div');
         e.className = 'emo';
-        e.textContent = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+         const label = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+         if(label==='CAT'){
+           e.innerHTML = '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M4 9c0-1 .8-3 2.2-3.8L8 4l2 2h4l2-2 1.8 1.2C18.8 6 20 8 20 9c0 5-3.8 8-8 8s-8-3-8-8Z" fill="#ffb6c9" stroke="#000" stroke-width="1.2"/><circle cx="9.2" cy="10.4" r=".9" fill="#000"/><circle cx="14.8" cy="10.4" r=".9" fill="#000"/></svg>';
+         } else if(label==='PAW'){
+           e.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 22s-6-4-9-7.5A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9 8.5C18 18 12 22 12 22Z" fill="#ffc56f" stroke="#000" stroke-width="1.2"/></svg>';
+         } else {
+           e.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41 1.01 4.22 2.59C11.09 5.01 12.76 4 14.5 4 17 4 19 6 19 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ff3aa7" stroke="#000" stroke-width=".8"/></svg>';
+         }
 
         const left = Math.random()*100;          // vw
         const dur  = 5 + Math.random()*7;        // was 10-24s, now 5-12s (faster)
@@ -499,7 +506,7 @@
     /* Meow */
     function meow(){
       try{
-        const u = new SpeechSynthesisUtterance('meow');
+        const u = new SpeechSynthesisUtterance('meooooooowwww');
         u.pitch = 1.4; u.rate = 1.1; u.volume = 0.6; speechSynthesis.speak(u);
       }catch(e){}
     }
