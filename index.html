@@ -6,6 +6,9 @@
   <title>Paws & Preferences: Find Your Favourite Kitty</title>
   <meta name="description" content="Swipe through cats from CATAAS. Like (right) or dislike (left), then see your favourites." />
   <link rel="preconnect" href="https://cataas.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&display=swap" rel="stylesheet" />
   <style>
     /* --------- Mobile-first (iPhone 14 Pro friendly) --------- */
     :root{
@@ -49,16 +52,31 @@
     /* Header (sticky, light pink) */
     header{
       position:sticky; top:0; z-index:10;
-      display:flex; align-items:center; justify-content:space-between; gap:6px;
-      width:100%; padding:8px 10px; background:var(--header-bg);
+      display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:8px;
+      width:100%; padding:10px 12px; background:var(--header-bg);
       border-bottom:1px solid var(--header-border);
       backdrop-filter:saturate(1) blur(2px);
     }
     header h1{
-      margin:0; font-size:clamp(1.1rem, 5.5vw, 1.6rem); letter-spacing:.3px; font-weight:900; white-space:nowrap;
-      color:#ff3aa7; -webkit-text-stroke:.8px #000;
-      text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;
+      margin:0; justify-self:center; text-align:center; display:inline-flex; align-items:center; gap:8px;
+      font-family:"Baloo 2", system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial;
+      font-size:clamp(1.3rem, 6.2vw, 2rem); letter-spacing:.2px; font-weight:800; white-space:nowrap;
+      background:linear-gradient(90deg,#ff3aa7 0%, #ffb6c9 25%, #ffc56f 50%, #ff8ad1 75%, #111 100%);
+      background-size:300% 100%;
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      -webkit-text-stroke:.8px #000; text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;
+      animation:brandShift 8s linear infinite;
     }
+    @keyframes brandShift{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+    .brand-wrap{display:flex; align-items:center; gap:8px; justify-self:start}
+    .brand-paw{animation:pawBounce 2.2s ease-in-out infinite; transform-origin:60% 60%}
+    @keyframes pawBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+    .title-icon{display:inline-grid; place-items:center}
+    .title-icon svg{ width:22px; height:22px; filter:drop-shadow(0 1px 0 #0006) }
+    .title-icon svg path{ stroke:#000; stroke-width:1.5 }
+    .title-icon svg .fill{ fill:url(#pawGrad) }
+    .title-icon.animate{ animation:pawNod 2.6s ease-in-out infinite }
+    @keyframes pawNod{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg)}}
 
     /* Card stack */
     .stack{position:relative;width:var(--card-w);height:var(--card-h);z-index:2; grid-column: 2;}
@@ -91,6 +109,16 @@
       align-items:center; gap:6px; width:100%;
       max-width:min(100%, calc(var(--card-w) + 20vw));
     }
+
+    /* Mobile controls */
+    .controls{display:flex; gap:14px; align-items:center; justify-content:center; width:100%; max-width:min(88vw, 420px)}
+    .fab{
+      border:var(--border) solid #111; background:#fff; color:#000; border-radius:999px;
+      width:64px; height:64px; display:grid; place-items:center; box-shadow:0 10px 30px #00000010;
+      transition:transform .12s ease, box-shadow .12s ease; user-select:none
+    }
+    .fab:active{ transform:scale(.96); box-shadow:0 6px 18px #00000012 }
+    .fab svg{ width:28px; height:28px }
 
     /* Poster hints */
     .side-hint{
@@ -133,6 +161,11 @@
     .chip{font-size:.9rem;color:var(--muted)}
 
     @media (prefers-reduced-motion: reduce){ .card{transition:none!important} }
+    @media (prefers-reduced-motion: reduce){ header h1{ animation:none } .brand-paw{ animation:none } }
+    @media (max-width:360px){
+      :root{ --poster-space: 24px }
+      .fab{ width:56px; height:56px }
+    }
   </style>
 </head>
 <body>
@@ -140,25 +173,49 @@
     <div class="paws" id="paws" aria-hidden="true"></div>
 
     <header>
-      <div style="display:flex;align-items:center;gap:10px">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <div class="brand-wrap">
+        <svg class="brand-paw" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M12 22s-6-4-9-7.5A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9 8.5C18 18 12 22 12 22Z" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <h1>Paws & Preferences</h1>
       </div>
-      <label class="sound-toggle" title="Toggle meow feedback" style="font-size:.95rem">
+      <h1>
+        <span class="title-icon animate" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="pawGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ff3aa7"/>
+                <stop offset="50%" stop-color="#ffb6c9"/>
+                <stop offset="100%" stop-color="#ffc56f"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 22s-6-4-9-7.5A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9 8.5C18 18 12 22 12 22Z" class="fill"/>
+            <path d="M12 22s-6-4-9-7.5A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9 8.5C18 18 12 22 12 22Z" fill="none"/>
+          </svg>
+        </span>
+        <span class="title-text">Paws & Preferences</span>
+      </h1>
+      <label class="sound-toggle" title="Toggle meow feedback" style="font-size:.95rem; justify-self:end; white-space:nowrap">
         <input type="checkbox" id="soundChk" /> Meow on like
       </label>
     </header>
 
     <div class="howto" id="howto" role="status" aria-live="polite">
-      <div class="howto-inner">⬅️ Swipe <strong>left</strong> to dislike · Swipe <strong>right</strong> to like ➡️</div>
+      <div class="howto-inner">Swipe <strong>left</strong> to dislike · Swipe <strong>right</strong> to like</div>
     </div>
 
     <div class="arena">
-      <div class="side-hint left" id="hintLeft" aria-hidden="true">⬅︎ SWIPE<br>LEFT</div>
+      <div class="side-hint left" id="hintLeft" aria-hidden="true">SWIPE<br>LEFT</div>
       <div class="stack" id="stack" aria-live="polite"></div>
-      <div class="side-hint right" id="hintRight" aria-hidden="true">SWIPE<br>RIGHT ➡︎</div>
+      <div class="side-hint right" id="hintRight" aria-hidden="true">SWIPE<br>RIGHT</div>
+    </div>
+
+    <div class="controls" aria-label="Actions">
+      <button id="btnNope" class="fab nope" aria-label="Dislike">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button id="btnLike" class="fab like" aria-label="Like">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 21s-6-4.5-9-8A5.5 5.5 0 0 1 12 5a5.5 5.5 0 0 1 9 8c-3 3.5-9 8-9 8Z" stroke="#16a34a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
     </div>
 
     <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
@@ -189,6 +246,8 @@
     const pawsLayer = document.getElementById('paws');
     const hintLeft = document.getElementById('hintLeft');
     const hintRight = document.getElementById('hintRight');
+    const btnLike = document.getElementById('btnLike');
+    const btnNope = document.getElementById('btnNope');
 
     /** cards: { id, src } where src = https://cataas.com/cat/:id?width&height (stable) */
     let cards = [];
@@ -314,6 +373,9 @@
         }, 320);
       }
 
+      // expose swipe for external controls
+      el._swipe = swipe;
+
       el.addEventListener('pointerdown', onPointerDown);
       el.addEventListener('pointermove', onPointerMove);
       el.addEventListener('pointerup', onPointerUp);
@@ -328,6 +390,11 @@
     }
 
     function focusTop(){ const top = stack.lastElementChild; if(top) top.focus(); }
+
+    function swipeTop(dir){
+      const top = stack.lastElementChild;
+      if(top && typeof top._swipe === 'function') top._swipe(dir);
+    }
 
     function updateProgress(){
       const pct = cards.length? (index/cards.length)*100 : 0;
@@ -350,6 +417,8 @@
     }
 
     again.addEventListener('click', ()=> loadBatch(TOTAL));
+    if(btnLike) btnLike.addEventListener('click', ()=> swipeTop('right'));
+    if(btnNope) btnNope.addEventListener('click', ()=> swipeTop('left'));
 
     /* Reactive poster hints */
     function setHintIntensity(x){
@@ -379,7 +448,7 @@
     /* Floating paws */
     function spawnPaws(){
       pawsLayer.innerHTML = '';
-      const count = 18; const icons = ['🐾','🐱','🐈'];
+      const count = 18; const icons = ['*','+','.'];
       for(let i=0;i<count;i++){
         const s = document.createElement('div'); s.className='paw'; s.textContent = icons[i%icons.length];
         const dur = 12 + Math.random()*12; const left = Math.random()*100; const delay = -Math.random()*dur;
