@@ -7,20 +7,21 @@
   <meta name="description" content="Swipe through cats from CATAAS. Like (right) or dislike (left), then see your favourites." />
   <link rel="preconnect" href="https://cataas.com" />
   <style>
+    /* --------- Mobile-first (iPhone 14 Pro friendly) --------- */
     :root{
-      --bg:#ffffff; --fg:#0B1220; --muted:#5b6b7c; --accent:#ff3aa7; --like:#16a34a; --nope:#dc2626;
+      --bg:#ffffff; --fg:#0B1220; --muted:#5b6b7c; --accent:#ff3aa7;
+      --like:#16a34a; --nope:#dc2626;
 
-      --card-w:min(94vw, 420px);
-      --card-h:min(72vh, 640px);
+      /* tuned for 390x844 */
+      --card-w:min(88vw, 340px);
+      --card-h:min(60vh, 500px);
 
-      --poster-space: 120px;
-      --arena-extra: 60vw;
+      --poster-space: 36px;
+      --border: 1.2px;
+      --radius: 16px;
 
-      --border: 2px;
-      --radius: 18px;
-
-      --header-bg:#fff5fa;           /* very light pink */
-      --header-border:#ffd3e6;       /* soft pink border */
+      --header-bg:#fff5fa;       /* very light pink */
+      --header-border:#ffd3e6;   /* soft pink border */
     }
 
     *{box-sizing:border-box}
@@ -33,29 +34,29 @@
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
       overscroll-behavior-y:contain;
+      padding: 0 10px;
     }
 
     .app{
       min-height:100%;
       display:grid; grid-template-rows:auto 1fr auto;
-      place-items:center; gap:12px; padding:18px;
+      place-items:center; gap:12px; padding:18px 0;
       position:relative; overflow:hidden;
-      padding-top: calc(18px + env(safe-area-inset-top));
-      padding-bottom: calc(18px + env(safe-area-inset-bottom));
+      padding-top: calc(14px + env(safe-area-inset-top));
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
     }
 
-    /* Sticky header: very light pink */
+    /* Header (sticky, light pink) */
     header{
-      position: sticky; top: 0; z-index: 10;
-      display:flex; align-items:center; gap:10px; justify-content:space-between;
-      width:100%; max-width:none; padding:10px 12px;
-      background: var(--header-bg);
+      position:sticky; top:0; z-index:10;
+      display:flex; align-items:center; justify-content:space-between; gap:6px;
+      width:100%; padding:8px 10px; background:var(--header-bg);
       border-bottom:1px solid var(--header-border);
       backdrop-filter:saturate(1) blur(2px);
     }
     header h1{
-      margin:0; font-size:clamp(1.25rem,5vw,2.2rem); letter-spacing:.3px; font-weight:900; white-space:nowrap;
-      color:#ff3aa7; -webkit-text-stroke:1.1px #000;
+      margin:0; font-size:clamp(1.1rem, 5.5vw, 1.6rem); letter-spacing:.3px; font-weight:900; white-space:nowrap;
+      color:#ff3aa7; -webkit-text-stroke:.8px #000;
       text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;
     }
 
@@ -64,10 +65,9 @@
     .card{
       position:absolute; inset:0; border-radius:var(--radius); overflow:hidden; background:#ffffff;
       border:var(--border) solid #111; box-shadow:0 18px 60px #0002; user-select:none;
-      touch-action:pan-y;
+      touch-action:pan-y; -webkit-tap-highlight-color:transparent;
     }
     .card:focus, .card:focus-visible{ outline:none }
-    .card{ -webkit-tap-highlight-color:transparent }
 
     .ph{position:absolute;inset:0;background:linear-gradient(90deg,#eee 25%,#f7f7f7 37%,#eee 63%);background-size:400% 100%;animation:shimmer 1.1s infinite}
     @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -80,142 +80,57 @@
       position:absolute;bottom:10px;left:12px;right:12px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
       backdrop-filter:blur(10px);background:#ffffffcc;border:1px solid #111;border-radius:14px;padding:10px 12px
     }
-    .meta .title{font-size:1.05rem;font-weight:800}
+    .meta .title{font-size:1.02rem;font-weight:800}
     .meta .idx{font-size:.85rem;color:var(--muted)}
 
     /* Arena: [poster][card][poster] */
     .arena{
       position:relative;
       display:grid;
-      grid-template-columns: minmax(var(--poster-space), 1fr) var(--card-w) minmax(var(--poster-space), 1fr);
-      align-items:center;
-      gap:16px;
-      width:100%;
-      max-width: min(100%, calc(var(--card-w) + var(--arena-extra)));
+      grid-template-columns: minmax(var(--poster-space),1fr) var(--card-w) minmax(var(--poster-space),1fr);
+      align-items:center; gap:6px; width:100%;
+      max-width:min(100%, calc(var(--card-w) + 20vw));
     }
 
     /* Poster hints */
     .side-hint{
-      grid-row: 1;
-      align-self:center; justify-self:center; z-index:3;
-      font-weight:900; letter-spacing:2px; text-align:center; line-height:.95;
+      grid-row:1; align-self:center; justify-self:center; z-index:3;
+      font-weight:900; letter-spacing:2px; text-align:center; line-height:1.1;
       color:#ff3aa7; -webkit-text-stroke:1px #000;
       text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;
-      opacity:.18; transition: opacity .18s ease, transform .18s ease;
-      font-size: clamp(16px, 5vw, 56px);
+      opacity:.25; transition: opacity .18s ease, transform .18s ease;
+      font-size: clamp(11px, 3.6vw, 22px);
       user-select:none; pointer-events:none;
     }
-    .side-hint.left{ grid-column: 1; transform: rotate(-4deg); }
-    .side-hint.right{ grid-column: 3; transform: rotate(4deg); }
-    .side-hint.active{ opacity:.7; }
-    .side-hint.left.active{ transform: rotate(-4deg) scale(1.06); }
-    .side-hint.right.active{ transform: rotate(4deg) scale(1.06); }
+    .side-hint.left{ grid-column:1; transform: rotate(-4deg) }
+    .side-hint.right{ grid-column:3; transform: rotate(4deg) }
+    .side-hint.active{ opacity:.7 }
+    .side-hint.left.active{ transform: rotate(-4deg) scale(1.06) }
+    .side-hint.right.active{ transform: rotate(4deg) scale(1.06) }
 
-    /* How-to banner */
+    /* How-to */
     .howto{z-index:3;width:100%;display:flex;justify-content:center}
-    .howto-inner{
-      margin:6px 0 8px;padding:8px 12px;background:#fff;border:1px solid #111;border-radius:999px;
-      box-shadow:0 6px 24px #0000000d;font-size:.95rem
-    }
+    .howto-inner{ margin:6px 0 8px; padding:6px 8px; background:#fff; border:1px solid #111; border-radius:999px;
+      box-shadow:0 6px 24px #0000000d; font-size:.9rem; text-align:center }
 
-    /* Paws animation */
+    /* Paws */
     .paws{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
     .paw{position:absolute;opacity:.10;animation:floatUp linear infinite;filter:drop-shadow(0 2px 0 #0002)}
     @keyframes floatUp{from{transform:translateY(110vh) rotate(0deg)}to{transform:translateY(-20vh) rotate(25deg)}}
 
     /* Progress */
-    .progress{width:var(--card-w);height:8px;background:#00000010;border:1px solid #111;border-radius:999px;overflow:hidden}
+    .progress{width:min(88vw,340px);height:6px;background:#00000010;border:1px solid #111;border-radius:999px;overflow:hidden}
     .bar{height:100%;width:0;background:linear-gradient(90deg,#ff3aa7,#111);transition:width .25s}
 
-    /* Summary (masonry gallery) */
+    /* Summary (single-column on mobile) */
     .summary{display:none;max-width:min(94vw,980px)}
     .summary.show{display:block}
-    .grid{column-count:3; column-gap:12px}
+    .grid{column-count:1; column-gap:12px}
     .grid img{
       width:100%; height:auto; display:block; margin:0 0 12px;
       border-radius:12px; border:var(--border) solid #111; break-inside:avoid; background:#fff;
     }
-    .chip{font-size:.88rem;color:var(--muted)}
-
-    /* ——— Responsive tweaks ——— */
-    @media (max-width: 900px){ .grid{ column-count:2 } }
-
-    /* iPhone 14 Pro Optimization */
-    @media (max-width: 430px) {
-      :root {
-        --card-w: min(88vw, 340px);
-        --card-h: min(60vh, 500px);
-        --poster-space: 36px;
-        --radius: 14px;
-        --border: 1.2px;
-      }
-
-      body {
-        padding: 0 10px;
-      }
-
-      header {
-        padding: 8px 10px;
-        gap: 6px;
-      }
-
-      header h1 {
-        font-size: clamp(1.1rem, 5.5vw, 1.6rem);
-        -webkit-text-stroke: 0.8px #000;
-      }
-
-      .howto-inner {
-        font-size: 0.85rem;
-        padding: 6px 8px;
-        text-align: center;
-      }
-
-      .arena {
-        grid-template-columns: minmax(var(--poster-space),1fr)
-                               var(--card-w)
-                               minmax(var(--poster-space),1fr);
-        gap: 6px;
-      }
-
-      .side-hint {
-        font-size: clamp(11px, 3.6vw, 22px);
-        opacity: 0.25;
-        line-height: 1.1;
-      }
-
-      .stack {
-        height: var(--card-h);
-      }
-
-      .meta {
-        padding: 8px 10px;
-        font-size: 0.9rem;
-      }
-
-      .progress {
-        width: min(88vw, 340px);
-        height: 6px;
-      }
-
-      .summary {
-        margin-top: 12px;
-      }
-
-      .grid {
-        column-count: 1;
-      }
-
-      .summary-actions {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      button,
-      a {
-        font-size: 0.9rem;
-        padding: 10px 12px !important;
-      }
-    }
+    .chip{font-size:.9rem;color:var(--muted)}
 
     @media (prefers-reduced-motion: reduce){ .card{transition:none!important} }
   </style>
@@ -275,42 +190,68 @@
     const hintLeft = document.getElementById('hintLeft');
     const hintRight = document.getElementById('hintRight');
 
-    let images = [];
+    /** cards: { id, src } where src = https://cataas.com/cat/:id?width&height (stable) */
+    let cards = [];
     let index = 0;
     let liked = [];
 
-    function catUrl(seed){
-      const w = Math.round(Math.min(window.innerWidth*0.94, 420));
-      const h = Math.round(Math.min(window.innerHeight*0.72, 640));
-      return `https://cataas.com/cat?width=${w}&height=${h}&random=${seed}`;
+    const w = Math.round(Math.min(window.innerWidth*0.88, 340));
+    const h = Math.round(Math.min(window.innerHeight*0.60, 500));
+    const cardSrcFromId = (id)=> `https://cataas.com/cat/${id}?width=${w}&height=${h}`;
+
+    /** Fetch one random cat JSON -> returns its stable id */
+    async function getRandomCatId(){
+      // CATAAS returns JSON when the request has application/json in headers.
+      const res = await fetch('https://cataas.com/cat?json=true', {
+        cache: 'no-store'   // fine to keep; doesn't trigger preflight
+    });
+    if (!res.ok) throw new Error('Cat JSON failed: ' + res.status);
+    const data = await res.json();
+    return data.id || data._id;
     }
 
-    function loadBatch(n=TOTAL){
-      images = Array.from({length:n}, (_,i)=>catUrl(Date.now()+i+Math.random()));
-      liked = []; index = 0; updateProgress();
-      stack.innerHTML = '';
-      summary.classList.remove('show');
-      howto.style.display = 'flex';
-      spawnPaws();
-      images.forEach((src, i)=>{
-        const card = createCard(src, i);
-        stack.appendChild(card);
-        const depth = (images.length - i - 1);
-        const dy = depth * 6;
-        card.style.transform = `translateY(-${dy}px)`;
-      });
-      focusTop();
-      resetHints();
+    async function loadBatch(n=TOTAL){
+        const promises = Array.from({length:n}, () =>
+            getRandomCatId().catch(() => null)
+        );
+        const ids = (await Promise.all(promises)).filter(Boolean);
+        const uniq = [...new Set(ids)];
+        while (uniq.length < n) {
+            const id = await getRandomCatId().catch(() => null);
+            if (id && !uniq.includes(id)) uniq.push(id);
+        }
+        cards = ids.map(id => ({ id, src: cardSrcFromId(id) }));
+        liked = []; index = 0; updateProgress();
+        stack.innerHTML = '';
+        summary.classList.remove('show');
+        howto.style.display = 'flex';
+        spawnPaws();
+
+        cards.forEach((c, i)=>{
+            const card = createCard(c, i);
+            stack.appendChild(card);
+            // stacked look
+            const depth = (cards.length - i - 1);
+            const dy = depth * 6;
+            card.style.transform = `translateY(-${dy}px)`;
+        });
+        focusTop();
+        resetHints();
     }
 
-    function createCard(src, i){
+    function createCard(item, i){
       const el = document.createElement('article');
       el.className = 'card';
       el.setAttribute('role','group');
-      el.setAttribute('aria-label', `Cat ${i+1} of ${images.length}`);
+      el.setAttribute('aria-label', `Cat ${i+1} of ${cards.length}`);
 
       const img = new Image();
-      img.className = 'img'; img.alt = 'A random cat from CATAAS'; img.src = src; img.loading='lazy';
+      img.className = 'img';
+      img.alt = 'A random cat from CATAAS';
+      img.decoding = 'async';
+      if(i === cards.length-1) img.loading = 'eager'; else img.loading = 'lazy';
+      img.src = item.src;
+
       const ph = document.createElement('div'); ph.className='ph';
       const scrim = document.createElement('div'); scrim.className='scrim';
 
@@ -319,12 +260,13 @@
 
       const meta = document.createElement('div'); meta.className='meta';
       const title = document.createElement('div'); title.className='title'; title.textContent='CATAAS Kitty';
-      const idx = document.createElement('div'); idx.className='idx'; idx.textContent=`${i+1} / ${images.length}`;
+      const idx = document.createElement('div'); idx.className='idx'; idx.textContent=`${i+1} / ${cards.length}`;
       meta.append(title, idx);
 
-      el.append(ph,img,likeBadge,nopeBadge,scrim,meta);
+      const clearPh = ()=> ph.remove();
+      img.addEventListener('load', clearPh);
 
-      img.addEventListener('load', ()=> img.classList.add('img-loaded'));
+      el.append(ph,img,likeBadge,nopeBadge,scrim,meta);
 
       let startX=0, startY=0, curX=0, curY=0, dragging=false;
       function onPointerDown(e){ dragging=true; startX=e.clientX; startY=e.clientY; el.setPointerCapture(e.pointerId); }
@@ -362,11 +304,11 @@
         el.style.transform = `translate(${offX}px, ${curY}px) rotate(${dir==='right'?20:-20}deg)`;
         el.style.opacity = .85;
         setTimeout(()=>{
-          if(dir==='right'){ liked.push(src); meow(); }
+          if(dir==='right'){ liked.push(item.src); meow(); } // store stable URL
           el.remove();
           index++;
           updateProgress();
-          if(index>=images.length){ showSummary(); }
+          if(index>=cards.length){ showSummary(); }
           else { focusTop(); }
           resetHints();
         }, 320);
@@ -385,17 +327,15 @@
       return el;
     }
 
-    function focusTop(){
-      const top = stack.lastElementChild; if(top) top.focus();
-    }
+    function focusTop(){ const top = stack.lastElementChild; if(top) top.focus(); }
 
     function updateProgress(){
-      const pct = images.length? (index/images.length)*100 : 0;
+      const pct = cards.length? (index/cards.length)*100 : 0;
       bar.style.width = pct+'%';
     }
 
     function showSummary(){
-      totalCountEl.textContent = images.length;
+      totalCountEl.textContent = cards.length;
       likedCountEl.textContent = liked.length;
       likedGrid.innerHTML = '';
       liked.forEach(src=>{
@@ -413,7 +353,7 @@
 
     /* Reactive poster hints */
     function setHintIntensity(x){
-      const BASE = 0.22, MAX = 0.75, TH = 10, SCALE = 160;
+      const BASE = 0.25, MAX = 0.75, TH = 10, SCALE = 160;
       if(!hintLeft || !hintRight) return;
       const abs = Math.max(0, Math.abs(x) - TH);
       const t = Math.min(abs / SCALE, 1);
@@ -432,18 +372,18 @@
       if(!hintLeft || !hintRight) return;
       hintLeft.classList.remove('active');
       hintRight.classList.remove('active');
-      hintLeft.style.opacity = 0.22;
-      hintRight.style.opacity = 0.22;
+      hintLeft.style.opacity = 0.25;
+      hintRight.style.opacity = 0.25;
     }
 
     /* Floating paws */
     function spawnPaws(){
       pawsLayer.innerHTML = '';
-      const count = 20; const icons = ['🐾','🐱','🐈'];
+      const count = 18; const icons = ['🐾','🐱','🐈'];
       for(let i=0;i<count;i++){
         const s = document.createElement('div'); s.className='paw'; s.textContent = icons[i%icons.length];
         const dur = 12 + Math.random()*12; const left = Math.random()*100; const delay = -Math.random()*dur;
-        const size = 110 + Math.random()*60; s.style.fontSize = size+'px';
+        const size = 100 + Math.random()*60; s.style.fontSize = size+'px';
         s.style.left = left+'%'; s.style.animationDuration = dur+'s'; s.style.animationDelay = delay+'s';
         pawsLayer.appendChild(s);
       }
