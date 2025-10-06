@@ -79,7 +79,7 @@
     @keyframes pawNod{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg)}}
 
     /* Card stack */
-    .stack{position:relative;width:var(--card-w);height:var(--card-h);z-index:2; grid-column: 2;}
+    .stack{position:relative;width:var(--card-w);height:var(--card-h);z-index:2}
     .card{
       position:absolute; inset:0; border-radius:var(--radius); overflow:hidden; background:#ffffff;
       border:var(--border) solid #111; box-shadow:0 18px 60px #0002; user-select:none;
@@ -105,9 +105,9 @@
     .arena{
       position:relative;
       display:grid;
-      grid-template-columns: minmax(var(--poster-space),1fr) var(--card-w) minmax(var(--poster-space),1fr);
-      align-items:center; gap:6px; width:100%;
-      max-width:min(100%, calc(var(--card-w) + 20vw));
+      grid-template-columns: var(--card-w);
+      justify-content:center; align-items:center; gap:6px; width:100%; margin-inline:auto;
+      max-width:100%;
     }
 
     /* Mobile controls */
