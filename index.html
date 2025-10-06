@@ -118,7 +118,7 @@
       box-shadow:0 6px 24px #0000000d;font-size:.95rem
     }
 
-    /* Paws animation (slightly stronger) */
+    /* Paws animation */
     .paws{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
     .paw{position:absolute;opacity:.10;animation:floatUp linear infinite;filter:drop-shadow(0 2px 0 #0002)}
     @keyframes floatUp{from{transform:translateY(110vh) rotate(0deg)}to{transform:translateY(-20vh) rotate(25deg)}}
@@ -139,30 +139,82 @@
 
     /* ——— Responsive tweaks ——— */
     @media (max-width: 900px){ .grid{ column-count:2 } }
-    @media (max-width: 560px){
-      :root{
-        --card-w: min(92vw, 360px);
-        --card-h: min(68vh, 540px);
-        --poster-space: 44px;   /* keep posters visible on phones */
-        --arena-extra: 0vw;
-        --border: 1.5px;
-        --radius: 16px;
+
+    /* iPhone 14 Pro Optimization */
+    @media (max-width: 430px) {
+      :root {
+        --card-w: min(88vw, 340px);
+        --card-h: min(60vh, 500px);
+        --poster-space: 36px;
+        --radius: 14px;
+        --border: 1.2px;
       }
-      .arena{
-        grid-template-columns: minmax(var(--poster-space),1fr) var(--card-w) minmax(var(--poster-space),1fr);
-        gap: 10px;
+
+      body {
+        padding: 0 10px;
       }
-      .side-hint{
-        display:block;
-        font-size: clamp(12px, 4.2vw, 24px);
-        opacity:.22;
-        line-height:1;
+
+      header {
+        padding: 8px 10px;
+        gap: 6px;
       }
-      header h1{ font-size: clamp(1.2rem, 6vw, 1.8rem); -webkit-text-stroke:1px #000 }
-      .howto-inner{ font-size:.9rem; padding:7px 10px }
-      .progress{ width: min(92vw, 360px); height:7px }
-      .grid{ column-count:1 }
-      .summary-actions > *{ flex:1 1 auto }
+
+      header h1 {
+        font-size: clamp(1.1rem, 5.5vw, 1.6rem);
+        -webkit-text-stroke: 0.8px #000;
+      }
+
+      .howto-inner {
+        font-size: 0.85rem;
+        padding: 6px 8px;
+        text-align: center;
+      }
+
+      .arena {
+        grid-template-columns: minmax(var(--poster-space),1fr)
+                               var(--card-w)
+                               minmax(var(--poster-space),1fr);
+        gap: 6px;
+      }
+
+      .side-hint {
+        font-size: clamp(11px, 3.6vw, 22px);
+        opacity: 0.25;
+        line-height: 1.1;
+      }
+
+      .stack {
+        height: var(--card-h);
+      }
+
+      .meta {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+      }
+
+      .progress {
+        width: min(88vw, 340px);
+        height: 6px;
+      }
+
+      .summary {
+        margin-top: 12px;
+      }
+
+      .grid {
+        column-count: 1;
+      }
+
+      .summary-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      button,
+      a {
+        font-size: 0.9rem;
+        padding: 10px 12px !important;
+      }
     }
 
     @media (prefers-reduced-motion: reduce){ .card{transition:none!important} }
@@ -243,10 +295,9 @@
       images.forEach((src, i)=>{
         const card = createCard(src, i);
         stack.appendChild(card);
-        /* Stacked UP look (like earlier): lower cards translated upward */
         const depth = (images.length - i - 1);
-        const dy = depth * 6;                   // how much each lower card rises
-        card.style.transform = `translateY(-${dy}px)`;  // upward layering
+        const dy = depth * 6;
+        card.style.transform = `translateY(-${dy}px)`;
       });
       focusTop();
       resetHints();
@@ -398,7 +449,7 @@
       }
     }
 
-    /* Meow without audio assets */
+    /* Meow */
     function meow(){
       if(!soundChk.checked) return;
       try{
