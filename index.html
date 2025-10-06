@@ -169,12 +169,12 @@
 
     /* ====== NEW: Floating Emoji Layer ====== */
     .emojis{position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:2}
-    .emo{
-      position:absolute; will-change:transform, opacity;
-      font-size: clamp(18px, 4vw, 28px);
-      opacity:.0; animation: floatEmoji linear forwards;
-      filter: drop-shadow(0 2px 0 #0002);
-    }
+     .emo{
+       position:absolute; will-change:transform, opacity;
+       font-size: clamp(18px, 4vw, 28px);
+       opacity:.2; animation: floatEmoji linear infinite;
+       filter: drop-shadow(0 2px 0 #0002);
+     }
     @keyframes floatEmoji{
       0%{ transform: translate(var(--x,0), 110vh) scale(var(--s,1)) rotate(0deg); opacity:0 }
       10%{ opacity:.35 }
