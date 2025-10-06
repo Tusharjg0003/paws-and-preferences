@@ -166,11 +166,29 @@
       :root{ --poster-space: 24px }
       .fab{ width:56px; height:56px }
     }
+
+    /* ====== NEW: Floating Emoji Layer ====== */
+    .emojis{position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:2}
+    .emo{
+      position:absolute; will-change:transform, opacity;
+      font-size: clamp(18px, 4vw, 28px);
+      opacity:.0; animation: floatEmoji linear forwards;
+      filter: drop-shadow(0 2px 0 #0002);
+    }
+    @keyframes floatEmoji{
+      0%{ transform: translate(var(--x,0), 110vh) scale(var(--s,1)) rotate(0deg); opacity:0 }
+      10%{ opacity:.35 }
+      85%{ opacity:.35 }
+      100%{ transform: translate(calc(var(--x,0) + var(--drift, 0px)), -10vh) scale(var(--s,1)) rotate(20deg); opacity:0 }
+    }
+    /* ======================================= */
   </style>
 </head>
 <body>
   <div class="app" id="app">
     <div class="paws" id="paws" aria-hidden="true"></div>
+    <!-- NEW: emoji layer -->
+    <div class="emojis" id="emojis" aria-hidden="true"></div>
 
     <header>
       <div class="brand-wrap" aria-hidden="true"></div>
@@ -240,6 +258,7 @@
     const pawsLayer = document.getElementById('paws');
     const btnLike = document.getElementById('btnLike');
     const btnNope = document.getElementById('btnNope');
+    const emojisLayer = document.getElementById('emojis'); // NEW
 
     /** cards: { id, src } where src = https://cataas.com/cat/:id?width&height (stable) */
     let cards = [];
@@ -277,6 +296,7 @@
         summary.classList.remove('show');
         howto.style.display = 'flex';
         spawnPaws();
+        spawnEmojis(); // NEW
 
         cards.forEach((c, i)=>{
             const card = createCard(c, i);
@@ -444,6 +464,37 @@
         pawsLayer.appendChild(s);
       }
     }
+
+    /* ====== NEW: Floating emoji spawner ====== */
+    function spawnEmojis(){
+      if(!emojisLayer) return;
+      emojisLayer.innerHTML = '';
+      const EMOJIS = ['😺','🐾','😻','🐈','❤️','💖'];
+
+      // Increase how many are on screen at once
+      const count = 48; // was 22
+
+      for(let i=0;i<count;i++){
+        const e = document.createElement('div');
+        e.className = 'emo';
+        e.textContent = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+
+        const left = Math.random()*100;          // vw
+        const dur  = 5 + Math.random()*7;        // was 10-24s, now 5-12s (faster)
+        const delay = -Math.random()*dur;         // randomize phase
+        const scale = 0.8 + Math.random()*0.9;    // 0.8-1.7
+        const drift = (Math.random()*60 - 30) + 'px'; // -30..30px
+
+        e.style.left = left + 'vw';
+        e.style.animationDuration = dur + 's';
+        e.style.animationDelay = delay + 's';
+        e.style.setProperty('--s', scale);
+        e.style.setProperty('--x', '0px');
+        e.style.setProperty('--drift', drift);
+        emojisLayer.appendChild(e);
+      }
+    }
+    /* ======================================= */
 
     /* Meow */
     function meow(){
